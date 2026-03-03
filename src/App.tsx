@@ -5,10 +5,13 @@
 
 import { useState } from 'react';
 import { Verb } from './data/verbs';
-import { RoundResult, LearningProgress } from './types';
+import { starterWords, WordCard } from './data/words';
+import { RoundResult, LearningProgress, WordRoundResult } from './types';
 import Flashcard from './components/Flashcard';
 import Menu from './components/Menu';
 import Summary from './components/Summary';
+import WordFlashcard from './components/WordFlashcard';
+import WordSummary from './components/WordSummary';
 import { BookOpen, ArrowLeft } from 'lucide-react';
 
 const PROGRESS_STORAGE_KEY = 'dutch_irregular_verbs_progress_v1';
@@ -46,14 +49,12 @@ function saveProgress(progress: LearningProgress) {
   window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progress));
 }
 
-function shuffleVerbs(items: Verb[]): Verb[] {
+function shuffleItems<T>(items: T[]): T[] {
   const shuffled = [...items];
-
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-
   return shuffled;
 }
 
@@ -82,21 +83,41 @@ function calculateUpdatedProgress(
 
 export default function App() {
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'summary'>('menu');
+  const [practiceMode, setPracticeMode] = useState<'verbs' | 'words'>('verbs');
+
   const [gameQueue, setGameQueue] = useState<Verb[]>([]);
   const [results, setResults] = useState<RoundResult[]>([]);
   const [initialRoundVerbs, setInitialRoundVerbs] = useState<Verb[]>([]);
   const [progress, setProgress] = useState<LearningProgress>(loadProgress);
 
-  const handleStart = (selectedVerbs: Verb[]) => {
-    const shuffled = shuffleVerbs(selectedVerbs);
+  const [wordQueue, setWordQueue] = useState<WordCard[]>([]);
+  const [wordResults, setWordResults] = useState<WordRoundResult[]>([]);
+
+  const [progress, setProgress] = useState<LearningProgress>(loadProgress);
+
+  const handleStartVerbs = (selectedVerbs: Verb[]) => {
+    const shuffled = shuffleItems(selectedVerbs);
+    setPracticeMode('verbs');
     setInitialRoundVerbs(selectedVerbs);
     setGameQueue(shuffled);
     setResults([]);
     setGameState('playing');
   };
 
+  const handleStartWords = () => {
+    setPracticeMode('words');
+    setWordQueue(shuffleItems(starterWords));
+    setWordResults([]);
+    setGameState('playing');
+  };
+
   const handleRestart = () => {
-    handleStart(initialRoundVerbs);
+    if (practiceMode === 'verbs') {
+      handleStartVerbs(initialRoundVerbs);
+      return;
+    }
+
+    handleStartWords();
   };
 
   const handleCardResult = (result: RoundResult) => {
@@ -114,10 +135,29 @@ export default function App() {
     }
   };
 
+  const handleWordCardResult = (result: WordRoundResult) => {
+    const updatedResults = [...wordResults, result];
+    setWordResults(updatedResults);
+
+    const newQueue = wordQueue.slice(1);
+    setWordQueue(newQueue);
+
+    if (newQueue.length === 0) {
+      setGameState('summary');
+    }
+  };
+
   const handleBackToMenu = () => {
     setGameState('menu');
     setGameQueue([]);
     setResults([]);
+    setWordQueue([]);
+    setWordResults([]);
+  };
+
+  const handleResetProgress = () => {
+    setProgress(emptyProgress);
+    saveProgress(emptyProgress);
   };
 
   const handleResetProgress = () => {
@@ -128,6 +168,16 @@ export default function App() {
   const currentVerb = gameQueue[0];
   const totalRoundCount = results.length + gameQueue.length;
   const currentIndex = results.length + 1;
+
+  const currentWord = wordQueue[0];
+  const wordsTotalCount = wordResults.length + wordQueue.length;
+  const wordsCurrentIndex = wordResults.length + 1;
+
+  const title = practiceMode === 'verbs' ? 'Dutch Irregular Verbs' : 'Dutch Starter Words';
+  const subtitle =
+    practiceMode === 'verbs'
+      ? 'Practice your Imperfectum and Perfectum forms.'
+      : 'Practice your starter vocabulary with flashcards.';
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col items-center py-12 px-4 font-sans text-stone-900">
@@ -145,21 +195,49 @@ export default function App() {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-600 text-white mb-4 shadow-lg shadow-indigo-600/20">
           <BookOpen className="w-6 h-6" />
         </div>
-        <h1 className="text-3xl font-serif font-medium tracking-tight text-stone-900">Dutch Irregular Verbs</h1>
-        {gameState === 'menu' && (
-          <p className="text-stone-500 max-w-md mx-auto">Practice your Imperfectum and Perfectum forms.</p>
-        )}
+        <h1 className="text-3xl font-serif font-medium tracking-tight text-stone-900">{title}</h1>
+        {gameState === 'menu' && <p className="text-stone-500 max-w-md mx-auto">{subtitle}</p>}
       </header>
 
       <main className="w-full max-w-2xl">
-        {gameState === 'menu' && <Menu onStart={handleStart} progress={progress} onResetProgress={handleResetProgress} />}
-
-        {gameState === 'playing' && currentVerb && (
-          <Flashcard verb={currentVerb} currentIndex={currentIndex} totalCount={totalRoundCount} onNext={handleCardResult} />
+        {gameState === 'menu' && (
+          <Menu
+            onStartVerbs={handleStartVerbs}
+            onStartWords={handleStartWords}
+            progress={progress}
+            onResetProgress={handleResetProgress}
+          />
         )}
 
-        {gameState === 'summary' && (
-          <Summary results={results} progress={progress} onRestart={handleRestart} onHome={handleBackToMenu} />
+        {gameState === 'playing' && practiceMode === 'verbs' && currentVerb && (
+          <Flashcard
+            verb={currentVerb}
+            currentIndex={currentIndex}
+            totalCount={totalRoundCount}
+            onNext={handleCardResult}
+          />
+        )}
+
+        {gameState === 'playing' && practiceMode === 'words' && currentWord && (
+          <WordFlashcard
+            word={currentWord}
+            currentIndex={wordsCurrentIndex}
+            totalCount={wordsTotalCount}
+            onNext={handleWordCardResult}
+          />
+        )}
+
+        {gameState === 'summary' && practiceMode === 'verbs' && (
+          <Summary
+            results={results}
+            progress={progress}
+            onRestart={handleRestart}
+            onHome={handleBackToMenu}
+          />
+        )}
+
+        {gameState === 'summary' && practiceMode === 'words' && (
+          <WordSummary results={wordResults} onRestart={handleRestart} onHome={handleBackToMenu} />
         )}
       </main>
 
