@@ -1,20 +1,43 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <h1>Dutch Irregular Verbs Trainer</h1>
+  <p>Невеликий тренажер для практики неправильних дієслів нідерландської мови.</p>
 </div>
 
-# Run and deploy your AI Studio app
+## Що вміє застосунок
 
-This contains everything you need to run your app locally.
+- Режим практики всіх дієслів або вибраного діапазону.
+- Введення форм **Imperfectum** і **Perfectum**.
+- Підсвітка результату:
+  - `correct` — правильна відповідь,
+  - `warning` — можлива помилка в подвоєнні літер,
+  - `incorrect` — неправильна відповідь.
+- Підсумок раунду з переліком помилок.
 
-View your app in AI Studio: https://ai.studio/apps/e11373cc-ae06-4e5f-bf04-b10bbee74e76
+## Локальний запуск
 
-## Run Locally
+### Вимоги
 
-**Prerequisites:**  Node.js
+- Node.js 20+
+- npm
 
+### Кроки
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Встановити залежності:
+   ```bash
+   npm install
+   ```
+2. Запустити dev-сервер:
+   ```bash
+   npm run dev
+   ```
+3. Відкрити застосунок у браузері:
+   - `http://localhost:3000`
+
+## Команди
+
+```bash
+npm run dev      # запуск у режимі розробки
+npm run build    # production-збірка
+npm run preview  # превʼю зібраного застосунку
+npm run lint     # перевірка TypeScript
+```

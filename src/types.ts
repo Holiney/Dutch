@@ -9,3 +9,11 @@ export interface RoundResult {
   userImperfect: string;
   userPerfect: string;
 }
+
+export interface LearningProgress {
+  roundsCompleted: number;
+  verbsPracticed: number;
+  fullyCorrect: number;
+  answerAccuracy: number;
+  bestRoundScore: number;
+}
