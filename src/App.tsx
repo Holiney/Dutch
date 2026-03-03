@@ -88,6 +88,7 @@ export default function App() {
   const [gameQueue, setGameQueue] = useState<Verb[]>([]);
   const [results, setResults] = useState<RoundResult[]>([]);
   const [initialRoundVerbs, setInitialRoundVerbs] = useState<Verb[]>([]);
+  const [progress, setProgress] = useState<LearningProgress>(loadProgress);
 
   const [wordQueue, setWordQueue] = useState<WordCard[]>([]);
   const [wordResults, setWordResults] = useState<WordRoundResult[]>([]);
@@ -152,6 +153,11 @@ export default function App() {
     setResults([]);
     setWordQueue([]);
     setWordResults([]);
+  };
+
+  const handleResetProgress = () => {
+    setProgress(emptyProgress);
+    saveProgress(emptyProgress);
   };
 
   const handleResetProgress = () => {
