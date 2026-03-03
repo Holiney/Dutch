@@ -173,6 +173,9 @@ export default function App() {
       ? 'Practice your Imperfectum and Perfectum forms.'
       : 'Practice your starter vocabulary with flashcards.';
 
+  const isVerbsMode = practiceMode === 'verbs';
+  const isWordsMode = practiceMode === 'words';
+
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col items-center py-12 px-4 font-sans text-stone-900">
       <header className="mb-8 text-center space-y-2 relative w-full max-w-2xl">
@@ -203,7 +206,7 @@ export default function App() {
           />
         )}
 
-        {gameState === 'playing' && practiceMode === 'verbs' && currentVerb && (
+        {gameState === 'playing' && isVerbsMode && currentVerb && (
           <Flashcard
             verb={currentVerb}
             currentIndex={currentIndex}
@@ -212,7 +215,7 @@ export default function App() {
           />
         )}
 
-        {gameState === 'playing' && practiceMode === 'words' && currentWord && (
+        {gameState === 'playing' && isWordsMode && currentWord && (
           <WordFlashcard
             word={currentWord}
             currentIndex={wordsCurrentIndex}
@@ -221,7 +224,7 @@ export default function App() {
           />
         )}
 
-        {gameState === 'summary' && practiceMode === 'verbs' && (
+        {gameState === 'summary' && isVerbsMode && (
           <Summary
             results={results}
             progress={progress}
@@ -230,13 +233,13 @@ export default function App() {
           />
         )}
 
-        {gameState === 'summary' && practiceMode === 'words' && (
+        {gameState === 'summary' && isWordsMode && (
           <WordSummary results={wordResults} onRestart={handleRestart} onHome={handleBackToMenu} />
         )}
       </main>
 
       <footer className="mt-auto pt-12 text-center text-stone-400 text-sm">
-        {gameState === 'menu' ? <p>Ready to practice?</p> : <p>{gameState === 'playing' ? 'Keep going!' : 'Well done!'}</p>}
+        {gameState === 'menu' ? <p>Ready to practice?</p> : <p>{gameState === 'playing' ? 'Keep going!' : 'Great job!'}</p>}
       </footer>
     </div>
   );
