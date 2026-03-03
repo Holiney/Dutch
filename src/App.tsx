@@ -173,8 +173,6 @@ export default function App() {
       ? 'Practice your Imperfectum and Perfectum forms.'
       : 'Practice your starter vocabulary with flashcards.';
 
-  const isVerbsMode = practiceMode === 'verbs';
-  const isWordsMode = practiceMode === 'words';
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col items-center py-12 px-4 font-sans text-stone-900">
@@ -206,7 +204,7 @@ export default function App() {
           />
         )}
 
-        {gameState === 'playing' && isVerbsMode && currentVerb && (
+        {gameState === 'playing' && practiceMode === 'verbs' && currentVerb && (
           <Flashcard
             verb={currentVerb}
             currentIndex={currentIndex}
@@ -215,7 +213,7 @@ export default function App() {
           />
         )}
 
-        {gameState === 'playing' && isWordsMode && currentWord && (
+        {gameState === 'playing' && practiceMode === 'words' && currentWord && (
           <WordFlashcard
             word={currentWord}
             currentIndex={wordsCurrentIndex}
@@ -224,7 +222,7 @@ export default function App() {
           />
         )}
 
-        {gameState === 'summary' && isVerbsMode && (
+        {gameState === 'summary' && practiceMode === 'verbs' && (
           <Summary
             results={results}
             progress={progress}
@@ -233,13 +231,13 @@ export default function App() {
           />
         )}
 
-        {gameState === 'summary' && isWordsMode && (
+        {gameState === 'summary' && practiceMode === 'words' && (
           <WordSummary results={wordResults} onRestart={handleRestart} onHome={handleBackToMenu} />
         )}
       </main>
 
       <footer className="mt-auto pt-12 text-center text-stone-400 text-sm">
-        {gameState === 'menu' ? <p>Ready to practice?</p> : <p>{gameState === 'playing' ? 'Keep going!' : 'Great job!'}</p>}
+        {gameState === 'menu' ? <p>Ready to practice?</p> : <p>{gameState === 'playing' ? 'Keep going!' : 'Well done!'}</p>}
       </footer>
     </div>
   );
