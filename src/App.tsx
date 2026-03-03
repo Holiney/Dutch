@@ -146,16 +146,12 @@ export default function App() {
     }
   };
 
-  const resetRoundState = () => {
+  const handleBackToMenu = () => {
+    setGameState('menu');
     setGameQueue([]);
     setResults([]);
     setWordQueue([]);
     setWordResults([]);
-  };
-
-  const handleBackToMenu = () => {
-    setGameState('menu');
-    resetRoundState();
   };
 
   const handleResetProgress = () => {

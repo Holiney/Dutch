@@ -20,12 +20,12 @@ export default function Menu({ onStartVerbs, onStartWords, progress, onResetProg
   const handleStartVerbs = () => {
     if (mode === 'all') {
       onStartVerbs(verbs);
-      return;
+    } else {
+      const start = Math.min(startIndex, endIndex);
+      const end = Math.max(startIndex, endIndex);
+      const selected = verbs.slice(start, end + 1);
+      onStartVerbs(selected);
     }
-
-    const start = Math.min(startIndex, endIndex);
-    const end = Math.max(startIndex, endIndex);
-    onStartVerbs(verbs.slice(start, end + 1));
   };
 
   return (
