@@ -88,6 +88,7 @@ export default function App() {
   const [gameQueue, setGameQueue] = useState<Verb[]>([]);
   const [results, setResults] = useState<RoundResult[]>([]);
   const [initialRoundVerbs, setInitialRoundVerbs] = useState<Verb[]>([]);
+  const [progress, setProgress] = useState<LearningProgress>(loadProgress);
 
   const [wordQueue, setWordQueue] = useState<WordCard[]>([]);
   const [wordResults, setWordResults] = useState<WordRoundResult[]>([]);
@@ -159,6 +160,11 @@ export default function App() {
     saveProgress(emptyProgress);
   };
 
+  const handleResetProgress = () => {
+    setProgress(emptyProgress);
+    saveProgress(emptyProgress);
+  };
+
   const currentVerb = gameQueue[0];
   const totalRoundCount = results.length + gameQueue.length;
   const currentIndex = results.length + 1;
@@ -172,7 +178,6 @@ export default function App() {
     practiceMode === 'verbs'
       ? 'Practice your Imperfectum and Perfectum forms.'
       : 'Practice your starter vocabulary with flashcards.';
-
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col items-center py-12 px-4 font-sans text-stone-900">
