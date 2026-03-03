@@ -1,26 +1,30 @@
-import { RoundResult } from '../types';
+import { RoundResult, LearningProgress } from '../types';
 import { RefreshCw, Home, Check, X, AlertCircle } from 'lucide-react';
 
 interface SummaryProps {
   results: RoundResult[];
+  progress: LearningProgress;
   onRestart: () => void;
   onHome: () => void;
 }
 
-export default function Summary({ results, onRestart, onHome }: SummaryProps) {
+export default function Summary({ results, progress, onRestart, onHome }: SummaryProps) {
   const correctCount = results.filter(
-    r => r.imperfectStatus === 'correct' && r.perfectStatus === 'correct'
+    (r) => r.imperfectStatus === 'correct' && r.perfectStatus === 'correct',
   ).length;
 
   const mistakes = results.filter(
-    r => r.imperfectStatus !== 'correct' || r.perfectStatus !== 'correct'
+    (r) => r.imperfectStatus !== 'correct' || r.perfectStatus !== 'correct',
   );
 
   const getStatusIcon = (status: 'correct' | 'warning' | 'incorrect') => {
     switch (status) {
-      case 'correct': return <Check className="w-4 h-4 text-green-500" />;
-      case 'warning': return <AlertCircle className="w-4 h-4 text-orange-500" />;
-      case 'incorrect': return <X className="w-4 h-4 text-red-500" />;
+      case 'correct':
+        return <Check className="w-4 h-4 text-green-500" />;
+      case 'warning':
+        return <AlertCircle className="w-4 h-4 text-orange-500" />;
+      case 'incorrect':
+        return <X className="w-4 h-4 text-red-500" />;
     }
   };
 
@@ -29,17 +33,38 @@ export default function Summary({ results, onRestart, onHome }: SummaryProps) {
       <div className="bg-indigo-600 p-8 text-center text-white">
         <h2 className="text-3xl font-serif font-medium mb-2">Round Complete!</h2>
         <p className="text-indigo-100">
-          You got <span className="font-bold text-white text-xl">{correctCount}</span> out of <span className="font-bold text-white text-xl">{results.length}</span> correct
+          You got <span className="font-bold text-white text-xl">{correctCount}</span> out of{' '}
+          <span className="font-bold text-white text-xl">{results.length}</span> correct
         </p>
       </div>
 
       <div className="p-8">
+        <div className="mb-8 rounded-xl border border-stone-200 bg-stone-50 p-4">
+          <h3 className="text-sm uppercase tracking-wide text-stone-500 mb-3">Overall progress</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div className="bg-white rounded-lg p-3 border border-stone-200">
+              <p className="text-stone-500 text-xs uppercase">Rounds</p>
+              <p className="text-lg font-semibold text-stone-800">{progress.roundsCompleted}</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-stone-200">
+              <p className="text-stone-500 text-xs uppercase">Words</p>
+              <p className="text-lg font-semibold text-stone-800">{progress.verbsPracticed}</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-stone-200">
+              <p className="text-stone-500 text-xs uppercase">Accuracy</p>
+              <p className="text-lg font-semibold text-stone-800">{progress.answerAccuracy}%</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-stone-200">
+              <p className="text-stone-500 text-xs uppercase">Best Round</p>
+              <p className="text-lg font-semibold text-stone-800">{progress.bestRoundScore}</p>
+            </div>
+          </div>
+        </div>
+
         {mistakes.length > 0 ? (
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-stone-900 border-b border-stone-200 pb-2">
-              Review Mistakes
-            </h3>
-            
+            <h3 className="text-lg font-medium text-stone-900 border-b border-stone-200 pb-2">Review Mistakes</h3>
+
             <div className="grid gap-4">
               {mistakes.map((result, idx) => (
                 <div key={idx} className="bg-stone-50 rounded-xl p-4 border border-stone-100">
@@ -51,12 +76,23 @@ export default function Summary({ results, onRestart, onHome }: SummaryProps) {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Imperfectum Review */}
-                    <div className={`p-3 rounded-lg ${result.imperfectStatus !== 'correct' ? 'bg-red-50 border border-red-100' : 'bg-white border border-stone-100'}`}>
+                    <div
+                      className={`p-3 rounded-lg ${
+                        result.imperfectStatus !== 'correct'
+                          ? 'bg-red-50 border border-red-100'
+                          : 'bg-white border border-stone-100'
+                      }`}
+                    >
                       <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Imperfectum</p>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={result.imperfectStatus !== 'correct' ? 'line-through text-stone-400' : 'text-stone-800'}>
-                          {result.userImperfect || "—"}
+                        <span
+                          className={
+                            result.imperfectStatus !== 'correct'
+                              ? 'line-through text-stone-400'
+                              : 'text-stone-800'
+                          }
+                        >
+                          {result.userImperfect || '—'}
                         </span>
                         {getStatusIcon(result.imperfectStatus)}
                       </div>
@@ -65,12 +101,23 @@ export default function Summary({ results, onRestart, onHome }: SummaryProps) {
                       )}
                     </div>
 
-                    {/* Perfectum Review */}
-                    <div className={`p-3 rounded-lg ${result.perfectStatus !== 'correct' ? 'bg-red-50 border border-red-100' : 'bg-white border border-stone-100'}`}>
+                    <div
+                      className={`p-3 rounded-lg ${
+                        result.perfectStatus !== 'correct'
+                          ? 'bg-red-50 border border-red-100'
+                          : 'bg-white border border-stone-100'
+                      }`}
+                    >
                       <p className="text-xs uppercase tracking-wide text-stone-400 mb-1">Perfectum</p>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={result.perfectStatus !== 'correct' ? 'line-through text-stone-400' : 'text-stone-800'}>
-                          {result.userPerfect || "—"}
+                        <span
+                          className={
+                            result.perfectStatus !== 'correct'
+                              ? 'line-through text-stone-400'
+                              : 'text-stone-800'
+                          }
+                        >
+                          {result.userPerfect || '—'}
                         </span>
                         {getStatusIcon(result.perfectStatus)}
                       </div>
