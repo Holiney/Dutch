@@ -20,12 +20,14 @@ export default function Flashcard({ verb, currentIndex, totalCount, onNext }: Fl
   const [isFlipped, setIsFlipped] = useState(false);
   const [imperfectInput, setImperfectInput] = useState('');
   const [perfectInput, setPerfectInput] = useState('');
+  const [showHint, setShowHint] = useState(false);
 
   // Reset state when verb changes
   useEffect(() => {
     setIsFlipped(false);
     setImperfectInput('');
     setPerfectInput('');
+    setShowHint(false);
   }, [verb]);
 
   const handleFlip = () => {
@@ -87,6 +89,8 @@ export default function Flashcard({ verb, currentIndex, totalCount, onNext }: Fl
     });
   };
 
+  const canCheck = imperfectInput.trim().length > 0 || perfectInput.trim().length > 0;
+
   const getStatusColor = (status: AnswerStatus) => {
     switch (status) {
       case 'correct': return 'text-green-300';
@@ -143,12 +147,25 @@ export default function Flashcard({ verb, currentIndex, totalCount, onNext }: Fl
                 <h2 className="text-5xl font-serif font-medium text-stone-800 mb-2">
                   {verb.infinitive}
                 </h2>
-                <p className="text-stone-500 text-sm font-medium">
-                  {verb.translation}
-                </p>
+                {showHint ? (
+                  <p className="text-stone-500 text-sm font-medium">{verb.translation}</p>
+                ) : (
+                  <p className="text-stone-400 text-xs font-medium uppercase tracking-wide">Translation hidden</p>
+                )}
               </div>
 
               <div className="w-full space-y-4">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowHint((prev) => !prev);
+                  }}
+                  className="text-xs px-3 py-1 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-colors"
+                >
+                  {showHint ? 'Hide translation' : 'Show translation'}
+                </button>
+
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-stone-500 uppercase tracking-wide ml-1">
                     Imperfectum
@@ -157,6 +174,12 @@ export default function Flashcard({ verb, currentIndex, totalCount, onNext }: Fl
                     type="text"
                     value={imperfectInput}
                     onChange={(e) => setImperfectInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && canCheck) {
+                        e.preventDefault();
+                        handleFlip();
+                      }
+                    }}
                     placeholder="deed / deden"
                     className="w-full bg-stone-50 border border-stone-200 rounded-lg px-4 py-3 text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                   />
@@ -169,6 +192,12 @@ export default function Flashcard({ verb, currentIndex, totalCount, onNext }: Fl
                     type="text"
                     value={perfectInput}
                     onChange={(e) => setPerfectInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && canCheck) {
+                        e.preventDefault();
+                        handleFlip();
+                      }
+                    }}
                     placeholder="(hebben) gedaan"
                     className="w-full bg-stone-50 border border-stone-200 rounded-lg px-4 py-3 text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                   />
@@ -179,7 +208,8 @@ export default function Flashcard({ verb, currentIndex, totalCount, onNext }: Fl
             <div className="w-full flex justify-center pt-4">
               <button
                 onClick={handleFlip}
-                className="flex items-center gap-2 px-6 py-2 bg-stone-900 text-white rounded-full hover:bg-stone-800 transition-colors text-sm font-medium"
+                disabled={!canCheck}
+                className="flex items-center gap-2 px-6 py-2 bg-stone-900 disabled:bg-stone-300 disabled:cursor-not-allowed text-white rounded-full hover:bg-stone-800 transition-colors text-sm font-medium"
               >
                 <Check className="w-4 h-4" />
                 Check Answer
