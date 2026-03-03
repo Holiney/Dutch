@@ -1,20 +1,55 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <h1>Dutch Trainer</h1>
+  <p>Тренажер для вивчення нідерландської: неправильні дієслова + базовий словник.</p>
 </div>
 
-# Run and deploy your AI Studio app
+## Можливості
 
-This contains everything you need to run your app locally.
+### 1) Irregular Verbs
+- Практика всіх дієслів або вибраного діапазону.
+- Введення форм **Imperfectum** та **Perfectum**.
+- Статуси перевірки:
+  - `correct` — правильно,
+  - `warning` — імовірна помилка в подвоєнні літер,
+  - `incorrect` — неправильно.
+- Підсумок раунду з розбором помилок.
 
-View your app in AI Studio: https://ai.studio/apps/e11373cc-ae06-4e5f-bf04-b10bbee74e76
+### 2) Starter Words
+- Окремий режим для базової лексики (картки слів).
+- Відповідь українським перекладом.
+- Підсумок раунду зі списком помилок.
 
-## Run Locally
+### 3) Прогрес навчання
+- Збереження прогресу в `localStorage` для режиму дієслів.
+- Відображення метрик:
+  - кількість раундів,
+  - кількість опрацьованих слів,
+  - точність,
+  - найкращий раунд.
 
-**Prerequisites:**  Node.js
+## Локальний запуск
 
+### Вимоги
+- Node.js 20+
+- npm
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Кроки
+1. Встановити залежності:
+   ```bash
+   npm install
+   ```
+2. Запустити dev-сервер:
+   ```bash
+   npm run dev
+   ```
+3. Відкрити застосунок у браузері:
+   - `http://localhost:3000`
+
+## Команди
+
+```bash
+npm run dev      # запуск у режимі розробки
+npm run build    # production-збірка
+npm run preview  # превʼю зібраного застосунку
+npm run lint     # перевірка TypeScript
+```
