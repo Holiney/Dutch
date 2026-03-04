@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { Check, RefreshCw, RotateCcw, X } from 'lucide-react';
 import { WordCard } from '../data/words';
@@ -8,6 +8,7 @@ interface WordFlashcardProps {
   word: WordCard;
   currentIndex: number;
   totalCount: number;
+  mode: 'uaToNl' | 'nlToUa';
   onNext: (result: WordRoundResult) => void;
 }
 
@@ -15,7 +16,7 @@ function normalize(text: string) {
   return text.toLowerCase().replace(/[’']/g, "'").trim();
 }
 
-export default function WordFlashcard({ word, currentIndex, totalCount, onNext }: WordFlashcardProps) {
+export default function WordFlashcard({ word, currentIndex, totalCount, mode, onNext }: WordFlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [answer, setAnswer] = useState('');
 
@@ -24,7 +25,11 @@ export default function WordFlashcard({ word, currentIndex, totalCount, onNext }
     setAnswer('');
   }, [word]);
 
-  const isCorrect = normalize(answer) === normalize(word.translation);
+  const promptWord = useMemo(() => (mode === 'uaToNl' ? word.translation : word.dutch), [mode, word]);
+  const expectedAnswer = useMemo(() => (mode === 'uaToNl' ? word.dutch : word.translation), [mode, word]);
+  const hintText = mode === 'uaToNl' ? 'Напиши переклад нідерландською' : 'Напиши переклад українською';
+
+  const isCorrect = normalize(answer) === normalize(expectedAnswer);
 
   return (
     <div className="w-full max-w-md mx-auto perspective-1000">
@@ -50,8 +55,9 @@ export default function WordFlashcard({ word, currentIndex, totalCount, onNext }
 
             <div className="flex-1 flex flex-col items-center justify-center w-full gap-6">
               <div className="text-center">
-                <h2 className="text-5xl font-serif font-medium text-stone-800 mb-2">{word.dutch}</h2>
-                <p className="text-stone-500 text-sm">Напиши переклад українською</p>
+                <h2 className="text-5xl font-serif font-medium text-stone-800 mb-2">{promptWord}</h2>
+                {mode === 'nlToUa' && <p className="text-xs text-stone-500">Транскрипція: {word.transcription}</p>}
+                <p className="text-stone-500 text-sm mt-2">{hintText}</p>
               </div>
 
               <div className="w-full">
@@ -88,14 +94,14 @@ export default function WordFlashcard({ word, currentIndex, totalCount, onNext }
             </div>
 
             <div className="flex-1 flex flex-col items-center justify-center w-full gap-6 text-center">
-              <p className="text-3xl font-serif">{word.dutch}</p>
+              <p className="text-3xl font-serif">{promptWord}</p>
               <div className="bg-indigo-700/50 rounded-xl p-4 w-full">
                 <p className="text-xs uppercase tracking-wide text-indigo-200 mb-2">Your answer</p>
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <span className={isCorrect ? 'text-green-300 font-semibold' : 'text-red-300 line-through font-semibold'}>{answer || '—'}</span>
                   {isCorrect ? <Check className="w-4 h-4 text-green-300" /> : <X className="w-4 h-4 text-red-300" />}
                 </div>
-                <p className="text-lg font-medium">{word.translation}</p>
+                <p className="text-lg font-medium">{expectedAnswer}</p>
               </div>
             </div>
 

@@ -1,20 +1,22 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { verbs } from '../data/verbs';
 import { LearningProgress } from '../types';
-import { Play, ListFilter, RotateCcw, Languages, BookMarked } from 'lucide-react';
+import { Play, ListFilter, RotateCcw, Languages, BookMarked, PencilLine } from 'lucide-react';
 
 interface MenuProps {
   onStartVerbs: (selectedVerbs: typeof verbs) => void;
-  onStartWordsQuiz: () => void;
   onStartWordsStudy: () => void;
+  onStartWordsUaToNlQuiz: () => void;
+  onStartWordsNlToUaQuiz: () => void;
   progress: LearningProgress;
   onResetProgress: () => void;
 }
 
 export default function Menu({
   onStartVerbs,
-  onStartWordsQuiz,
   onStartWordsStudy,
+  onStartWordsUaToNlQuiz,
+  onStartWordsNlToUaQuiz,
   progress,
   onResetProgress,
 }: MenuProps) {
@@ -23,15 +25,19 @@ export default function Menu({
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(verbs.length - 1);
 
+  const sortedBounds = useMemo(() => {
+    const start = Math.min(startIndex, endIndex);
+    const end = Math.max(startIndex, endIndex);
+    return { start, end };
+  }, [startIndex, endIndex]);
+
   const handleStartVerbs = () => {
     if (mode === 'all') {
       onStartVerbs(verbs);
       return;
     }
 
-    const start = Math.min(startIndex, endIndex);
-    const end = Math.max(startIndex, endIndex);
-    onStartVerbs(verbs.slice(start, end + 1));
+    onStartVerbs(verbs.slice(sortedBounds.start, sortedBounds.end + 1));
   };
 
   return (
@@ -108,26 +114,28 @@ export default function Menu({
           {mode === 'range' && (
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1 text-sm">
-                <span className="text-stone-500">Початок ({startIndex + 1})</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={verbs.length - 1}
+                <span className="text-stone-500">Від слова</span>
+                <select
                   value={startIndex}
                   onChange={(event) => setStartIndex(Number(event.target.value))}
-                  className="w-full"
-                />
+                  className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-stone-700"
+                >
+                  {verbs.map((verb, index) => (
+                    <option key={`start-${verb.infinitive}-${index}`} value={index}>{verb.infinitive}</option>
+                  ))}
+                </select>
               </label>
               <label className="space-y-1 text-sm">
-                <span className="text-stone-500">Кінець ({endIndex + 1})</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={verbs.length - 1}
+                <span className="text-stone-500">До слова</span>
+                <select
                   value={endIndex}
                   onChange={(event) => setEndIndex(Number(event.target.value))}
-                  className="w-full"
-                />
+                  className="w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-stone-700"
+                >
+                  {verbs.map((verb, index) => (
+                    <option key={`end-${verb.infinitive}-${index}`} value={index}>{verb.infinitive}</option>
+                  ))}
+                </select>
               </label>
             </div>
           )}
@@ -143,24 +151,35 @@ export default function Menu({
       ) : (
         <div className="space-y-4">
           <button
-            onClick={onStartWordsQuiz}
-            className="flex w-full items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-left hover:bg-indigo-100"
-          >
-            <Languages className="mt-1 h-5 w-5 text-indigo-600" />
-            <span>
-              <span className="block font-semibold text-stone-900">Тренування перекладу</span>
-              <span className="text-sm text-stone-600">Введи український переклад і отримай результат.</span>
-            </span>
-          </button>
-
-          <button
             onClick={onStartWordsStudy}
             className="flex w-full items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-left hover:bg-emerald-100"
           >
             <BookMarked className="mt-1 h-5 w-5 text-emerald-700" />
             <span>
-              <span className="block font-semibold text-stone-900">Нова функція: картки для вивчення</span>
-              <span className="text-sm text-stone-600">Гортай картки, відкривай переклад, відмічай вивчені слова.</span>
+              <span className="block font-semibold text-stone-900">Картки: слово + переклад + транскрипція</span>
+              <span className="text-sm text-stone-600">Переглядай слова одразу з перекладом і вимовою.</span>
+            </span>
+          </button>
+
+          <button
+            onClick={onStartWordsUaToNlQuiz}
+            className="flex w-full items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-left hover:bg-indigo-100"
+          >
+            <PencilLine className="mt-1 h-5 w-5 text-indigo-600" />
+            <span>
+              <span className="block font-semibold text-stone-900">Тест: Українська → Нідерландська</span>
+              <span className="text-sm text-stone-600">Бачиш українське слово та пишеш відповідник нідерландською.</span>
+            </span>
+          </button>
+
+          <button
+            onClick={onStartWordsNlToUaQuiz}
+            className="flex w-full items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50 p-4 text-left hover:bg-sky-100"
+          >
+            <Languages className="mt-1 h-5 w-5 text-sky-700" />
+            <span>
+              <span className="block font-semibold text-stone-900">Тест: Нідерландська → Українська</span>
+              <span className="text-sm text-stone-600">Бачиш слово нідерландською (з транскрипцією) та пишеш переклад українською.</span>
             </span>
           </button>
         </div>
