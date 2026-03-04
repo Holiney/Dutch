@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { Check, RefreshCw, RotateCcw, X } from 'lucide-react';
 import { WordCard } from '../data/words';
-import { WordRoundResult } from '../types';
+import { WordRoundResult, WordsMode } from '../types';
 
 interface WordFlashcardProps {
   word: WordCard;
   currentIndex: number;
   totalCount: number;
+  mode: WordsMode;
   onNext: (result: WordRoundResult) => void;
 }
 
@@ -15,7 +16,7 @@ function normalize(text: string) {
   return text.toLowerCase().replace(/[’']/g, "'").trim();
 }
 
-export default function WordFlashcard({ word, currentIndex, totalCount, onNext }: WordFlashcardProps) {
+export default function WordFlashcard({ word, currentIndex, totalCount, mode, onNext }: WordFlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [answer, setAnswer] = useState('');
 
@@ -24,89 +25,114 @@ export default function WordFlashcard({ word, currentIndex, totalCount, onNext }
     setAnswer('');
   }, [word]);
 
-  const isCorrect = normalize(answer) === normalize(word.translation);
+  const config = useMemo(() => {
+    if (mode === 'quizUkToNl') {
+      return {
+        promptText: word.translation,
+        promptHint: 'Напиши нідерландською',
+        expectedAnswer: word.dutch,
+        header: 'Українська → Нідерландська',
+      };
+    }
+
+    return {
+      promptText: word.dutch,
+      promptHint: 'Напиши українською',
+      expectedAnswer: word.translation,
+      header: 'Нідерландська → Українська',
+    };
+  }, [mode, word.dutch, word.translation]);
+
+  const isCorrect = normalize(answer) === normalize(config.expectedAnswer);
 
   return (
-    <div className="w-full max-w-md mx-auto perspective-1000">
-      <div className="mb-4 flex justify-between items-center text-sm font-medium text-stone-500">
-        <span>Word {currentIndex} of {totalCount}</span>
-        <div className="w-32 h-2 bg-stone-200 rounded-full overflow-hidden">
+    <div className="mx-auto w-full max-w-md perspective-1000">
+      <div className="mb-4 flex items-center justify-between text-sm font-medium text-stone-500">
+        <span>Слово {currentIndex} з {totalCount}</span>
+        <div className="h-2 w-32 overflow-hidden rounded-full bg-stone-200">
           <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${(currentIndex / totalCount) * 100}%` }} />
         </div>
       </div>
 
-      <div className="relative w-full h-[500px]" style={{ perspective: '1000px' }}>
+      <div className="relative h-[500px] w-full" style={{ perspective: '1000px' }}>
         <motion.div
-          className="w-full h-full relative preserve-3d"
+          className="relative h-full w-full preserve-3d"
           animate={{ rotateY: isFlipped ? 180 : 0 }}
           transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
           style={{ transformStyle: 'preserve-3d' }}
         >
-          <div className="absolute w-full h-full backface-hidden bg-white rounded-2xl shadow-xl border border-stone-200 p-8 flex flex-col items-center justify-between" style={{ backfaceVisibility: 'hidden' }}>
-            <div className="w-full flex justify-between items-center text-stone-400">
-              <span className="text-xs font-mono uppercase tracking-wider">Starter words</span>
-              <span className="text-xs font-mono uppercase tracking-wider">{word.category}</span>
+          <div className="absolute flex h-full w-full flex-col items-center justify-between rounded-2xl border border-stone-200 bg-white p-8 shadow-xl" style={{ backfaceVisibility: 'hidden' }}>
+            <div className="flex w-full items-center justify-between text-stone-400">
+              <span className="text-xs uppercase tracking-wider">Starter words</span>
+              <span className="text-xs uppercase tracking-wider">{word.category}</span>
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center w-full gap-6">
-              <div className="text-center">
-                <h2 className="text-5xl font-serif font-medium text-stone-800 mb-2">{word.dutch}</h2>
-                <p className="text-stone-500 text-sm">Напиши переклад українською</p>
+            <div className="flex w-full flex-1 flex-col items-center justify-center gap-6 text-center">
+              <div>
+                <p className="mb-2 text-xs uppercase tracking-wide text-indigo-600">{config.header}</p>
+                <h2 className="mb-2 text-4xl font-semibold text-stone-800">{config.promptText}</h2>
+                <p className="text-sm text-stone-500">{config.promptHint}</p>
               </div>
 
-              <div className="w-full">
-                <input
-                  type="text"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && answer.trim()) {
-                      e.preventDefault();
-                      setIsFlipped(true);
-                    }
-                  }}
-                  placeholder="твоя відповідь"
-                  className="w-full bg-stone-50 border border-stone-200 rounded-lg px-4 py-3 text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                />
-              </div>
+              <input
+                type="text"
+                value={answer}
+                onChange={(event) => setAnswer(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && answer.trim()) {
+                    event.preventDefault();
+                    setIsFlipped(true);
+                  }
+                }}
+                placeholder="твоя відповідь"
+                className="w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-stone-800 transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
             </div>
 
             <button
               onClick={() => setIsFlipped(true)}
               disabled={!answer.trim()}
-              className="flex items-center gap-2 px-6 py-2 bg-stone-900 disabled:bg-stone-300 disabled:cursor-not-allowed text-white rounded-full hover:bg-stone-800 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 rounded-full bg-stone-900 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-300"
             >
-              <Check className="w-4 h-4" />
-              Check Answer
+              <Check className="h-4 w-4" /> Перевірити
             </button>
           </div>
 
-          <div className="absolute w-full h-full backface-hidden bg-indigo-600 rounded-2xl shadow-xl p-8 flex flex-col items-center justify-between text-white" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-            <div className="w-full flex justify-between items-center text-indigo-200">
-              <span className="text-xs font-mono uppercase tracking-wider">Result</span>
-              <RotateCcw className="w-4 h-4" />
+          <div className="absolute flex h-full w-full flex-col items-center justify-between rounded-2xl bg-indigo-600 p-8 text-white shadow-xl" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+            <div className="flex w-full items-center justify-between text-indigo-200">
+              <span className="text-xs uppercase tracking-wider">Результат</span>
+              <RotateCcw className="h-4 w-4" />
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center w-full gap-6 text-center">
-              <p className="text-3xl font-serif">{word.dutch}</p>
-              <div className="bg-indigo-700/50 rounded-xl p-4 w-full">
-                <p className="text-xs uppercase tracking-wide text-indigo-200 mb-2">Your answer</p>
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className={isCorrect ? 'text-green-300 font-semibold' : 'text-red-300 line-through font-semibold'}>{answer || '—'}</span>
-                  {isCorrect ? <Check className="w-4 h-4 text-green-300" /> : <X className="w-4 h-4 text-red-300" />}
+            <div className="flex w-full flex-1 flex-col items-center justify-center gap-6 text-center">
+              <p className="text-2xl font-medium">{config.promptText}</p>
+              <div className="w-full rounded-xl bg-indigo-700/50 p-4">
+                <p className="mb-2 text-xs uppercase tracking-wide text-indigo-200">Твоя відповідь</p>
+                <div className="mb-2 flex items-center justify-center gap-2">
+                  <span className={isCorrect ? 'font-semibold text-green-300' : 'font-semibold text-red-300 line-through'}>{answer || '—'}</span>
+                  {isCorrect ? <Check className="h-4 w-4 text-green-300" /> : <X className="h-4 w-4 text-red-300" />}
                 </div>
-                <p className="text-lg font-medium">{word.translation}</p>
+                <p className="text-lg font-medium">{config.expectedAnswer}</p>
               </div>
             </div>
 
-            <div className="w-full flex justify-center gap-3">
-              <button onClick={() => setIsFlipped(false)} className="px-6 py-2 bg-indigo-800 text-white rounded-full hover:bg-indigo-900 transition-colors text-sm font-medium">Back</button>
+            <div className="flex w-full justify-center gap-3">
+              <button onClick={() => setIsFlipped(false)} className="rounded-full bg-indigo-800 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-900">
+                Назад
+              </button>
               <button
-                onClick={() => onNext({ word, userAnswer: answer, status: isCorrect ? 'correct' : 'incorrect' })}
-                className="flex items-center gap-2 px-6 py-2 bg-white text-indigo-600 rounded-full hover:bg-indigo-50 transition-colors text-sm font-medium"
+                onClick={() =>
+                  onNext({
+                    word,
+                    userAnswer: answer,
+                    expectedAnswer: config.expectedAnswer,
+                    promptText: config.promptText,
+                    status: isCorrect ? 'correct' : 'incorrect',
+                  })
+                }
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
               >
-                <RefreshCw className="w-4 h-4" />
-                Next Word
+                <RefreshCw className="h-4 w-4" /> Далі
               </button>
             </div>
           </div>

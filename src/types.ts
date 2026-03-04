@@ -2,6 +2,7 @@ import { Verb } from './data/verbs';
 import { WordCard } from './data/words';
 
 export type AnswerStatus = 'correct' | 'warning' | 'incorrect';
+export type WordsMode = 'study' | 'quizUkToNl' | 'quizNlToUk';
 
 export interface RoundResult {
   verb: Verb;
@@ -14,6 +15,8 @@ export interface RoundResult {
 export interface WordRoundResult {
   word: WordCard;
   userAnswer: string;
+  expectedAnswer: string;
+  promptText: string;
   status: 'correct' | 'incorrect';
 }
 
