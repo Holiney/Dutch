@@ -16,6 +16,13 @@ function normalize(text: string) {
   return text.toLowerCase().replace(/[’']/g, "'").trim();
 }
 
+function getAcceptedAnswers(expectedAnswer: string) {
+  return expectedAnswer
+    .split('/')
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
 export default function WordFlashcard({ word, currentIndex, totalCount, mode, onNext }: WordFlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [answer, setAnswer] = useState('');
@@ -43,7 +50,8 @@ export default function WordFlashcard({ word, currentIndex, totalCount, mode, on
     };
   }, [mode, word.dutch, word.translation]);
 
-  const isCorrect = normalize(answer) === normalize(config.expectedAnswer);
+  const acceptedAnswers = getAcceptedAnswers(config.expectedAnswer);
+  const isCorrect = acceptedAnswers.some((expected) => normalize(answer) === normalize(expected));
 
   return (
     <div className="mx-auto w-full max-w-md perspective-1000">
@@ -112,7 +120,7 @@ export default function WordFlashcard({ word, currentIndex, totalCount, mode, on
                   <span className={isCorrect ? 'font-semibold text-green-300' : 'font-semibold text-red-300 line-through'}>{answer || '—'}</span>
                   {isCorrect ? <Check className="h-4 w-4 text-green-300" /> : <X className="h-4 w-4 text-red-300" />}
                 </div>
-                <p className="text-lg font-medium">{config.expectedAnswer}</p>
+                <p className="text-lg font-medium">{acceptedAnswers.join(' / ')}</p>
               </div>
             </div>
 
