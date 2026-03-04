@@ -12,9 +12,13 @@ import Menu from './components/Menu';
 import Summary from './components/Summary';
 import WordFlashcard from './components/WordFlashcard';
 import WordSummary from './components/WordSummary';
+import StudyWordsDeck from './components/StudyWordsDeck';
 import { BookOpen, ArrowLeft } from 'lucide-react';
 
 const PROGRESS_STORAGE_KEY = 'dutch_irregular_verbs_progress_v1';
+
+type GameState = 'menu' | 'playing' | 'summary';
+type PracticeMode = 'verbs' | 'wordsQuiz' | 'wordsStudy';
 
 const emptyProgress: LearningProgress = {
   roundsCompleted: 0,
@@ -82,8 +86,8 @@ function calculateUpdatedProgress(
 }
 
 export default function App() {
-  const [gameState, setGameState] = useState<'menu' | 'playing' | 'summary'>('menu');
-  const [practiceMode, setPracticeMode] = useState<'verbs' | 'words'>('verbs');
+  const [gameState, setGameState] = useState<GameState>('menu');
+  const [practiceMode, setPracticeMode] = useState<PracticeMode>('verbs');
 
   const [gameQueue, setGameQueue] = useState<Verb[]>([]);
   const [results, setResults] = useState<RoundResult[]>([]);
@@ -92,8 +96,6 @@ export default function App() {
 
   const [wordQueue, setWordQueue] = useState<WordCard[]>([]);
   const [wordResults, setWordResults] = useState<WordRoundResult[]>([]);
-
-  const [progress, setProgress] = useState<LearningProgress>(loadProgress);
 
   const handleStartVerbs = (selectedVerbs: Verb[]) => {
     const shuffled = shuffleItems(selectedVerbs);
@@ -104,10 +106,15 @@ export default function App() {
     setGameState('playing');
   };
 
-  const handleStartWords = () => {
-    setPracticeMode('words');
+  const handleStartWordsQuiz = () => {
+    setPracticeMode('wordsQuiz');
     setWordQueue(shuffleItems(starterWords));
     setWordResults([]);
+    setGameState('playing');
+  };
+
+  const handleStartWordsStudy = () => {
+    setPracticeMode('wordsStudy');
     setGameState('playing');
   };
 
@@ -117,7 +124,7 @@ export default function App() {
       return;
     }
 
-    handleStartWords();
+    handleStartWordsQuiz();
   };
 
   const handleCardResult = (result: RoundResult) => {
@@ -160,11 +167,6 @@ export default function App() {
     saveProgress(emptyProgress);
   };
 
-  const handleResetProgress = () => {
-    setProgress(emptyProgress);
-    saveProgress(emptyProgress);
-  };
-
   const currentVerb = gameQueue[0];
   const totalRoundCount = results.length + gameQueue.length;
   const currentIndex = results.length + 1;
@@ -173,77 +175,85 @@ export default function App() {
   const wordsTotalCount = wordResults.length + wordQueue.length;
   const wordsCurrentIndex = wordResults.length + 1;
 
-  const title = practiceMode === 'verbs' ? 'Dutch Irregular Verbs' : 'Dutch Starter Words';
-  const subtitle =
+  const title =
     practiceMode === 'verbs'
-      ? 'Practice your Imperfectum and Perfectum forms.'
-      : 'Practice your starter vocabulary with flashcards.';
+      ? 'Dutch Verbs Trainer'
+      : practiceMode === 'wordsQuiz'
+        ? 'Dutch Words Quiz'
+        : 'Dutch Words Flashcards';
 
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col items-center py-12 px-4 font-sans text-stone-900">
-      <header className="mb-8 text-center space-y-2 relative w-full max-w-2xl">
-        {gameState !== 'menu' && (
-          <button
-            onClick={handleBackToMenu}
-            className="absolute left-0 top-0 p-2 text-stone-400 hover:text-stone-600 transition-colors"
-            title="Back to Menu"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-        )}
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-indigo-50 to-violet-100 px-4 py-10 text-stone-900">
+      <div className="mx-auto flex min-h-[88vh] w-full max-w-4xl flex-col">
+        <header className="relative mb-8 text-center">
+          {gameState !== 'menu' && (
+            <button
+              onClick={handleBackToMenu}
+              className="absolute left-0 top-0 rounded-xl bg-white/80 p-2 text-stone-500 shadow-sm transition hover:text-stone-700"
+              title="Back to Menu"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          )}
 
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-600 text-white mb-4 shadow-lg shadow-indigo-600/20">
-          <BookOpen className="w-6 h-6" />
-        </div>
-        <h1 className="text-3xl font-serif font-medium tracking-tight text-stone-900">{title}</h1>
-        {gameState === 'menu' && <p className="text-stone-500 max-w-md mx-auto">{subtitle}</p>}
-      </header>
+          <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-400/50">
+            <BookOpen className="h-7 w-7" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
+          {gameState === 'menu' && (
+            <p className="mx-auto mt-2 max-w-xl text-stone-600">
+              Оновлений дизайн + новий режим вивчення слів картками для швидкого запам'ятовування.
+            </p>
+          )}
+        </header>
 
-      <main className="w-full max-w-2xl">
-        {gameState === 'menu' && (
-          <Menu
-            onStartVerbs={handleStartVerbs}
-            onStartWords={handleStartWords}
-            progress={progress}
-            onResetProgress={handleResetProgress}
-          />
-        )}
+        <main className="w-full flex-1">
+          {gameState === 'menu' && (
+            <Menu
+              onStartVerbs={handleStartVerbs}
+              onStartWordsQuiz={handleStartWordsQuiz}
+              onStartWordsStudy={handleStartWordsStudy}
+              progress={progress}
+              onResetProgress={handleResetProgress}
+            />
+          )}
 
-        {gameState === 'playing' && practiceMode === 'verbs' && currentVerb && (
-          <Flashcard
-            verb={currentVerb}
-            currentIndex={currentIndex}
-            totalCount={totalRoundCount}
-            onNext={handleCardResult}
-          />
-        )}
+          {gameState === 'playing' && practiceMode === 'verbs' && currentVerb && (
+            <Flashcard
+              verb={currentVerb}
+              currentIndex={currentIndex}
+              totalCount={totalRoundCount}
+              onNext={handleCardResult}
+            />
+          )}
 
-        {gameState === 'playing' && practiceMode === 'words' && currentWord && (
-          <WordFlashcard
-            word={currentWord}
-            currentIndex={wordsCurrentIndex}
-            totalCount={wordsTotalCount}
-            onNext={handleWordCardResult}
-          />
-        )}
+          {gameState === 'playing' && practiceMode === 'wordsQuiz' && currentWord && (
+            <WordFlashcard
+              word={currentWord}
+              currentIndex={wordsCurrentIndex}
+              totalCount={wordsTotalCount}
+              onNext={handleWordCardResult}
+            />
+          )}
 
-        {gameState === 'summary' && practiceMode === 'verbs' && (
-          <Summary
-            results={results}
-            progress={progress}
-            onRestart={handleRestart}
-            onHome={handleBackToMenu}
-          />
-        )}
+          {gameState === 'playing' && practiceMode === 'wordsStudy' && (
+            <StudyWordsDeck words={starterWords} onBack={handleBackToMenu} />
+          )}
 
-        {gameState === 'summary' && practiceMode === 'words' && (
-          <WordSummary results={wordResults} onRestart={handleRestart} onHome={handleBackToMenu} />
-        )}
-      </main>
+          {gameState === 'summary' && practiceMode === 'verbs' && (
+            <Summary
+              results={results}
+              progress={progress}
+              onRestart={handleRestart}
+              onHome={handleBackToMenu}
+            />
+          )}
 
-      <footer className="mt-auto pt-12 text-center text-stone-400 text-sm">
-        {gameState === 'menu' ? <p>Ready to practice?</p> : <p>{gameState === 'playing' ? 'Keep going!' : 'Well done!'}</p>}
-      </footer>
+          {gameState === 'summary' && practiceMode === 'wordsQuiz' && (
+            <WordSummary results={wordResults} onRestart={handleRestart} onHome={handleBackToMenu} />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

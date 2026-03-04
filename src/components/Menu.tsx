@@ -1,17 +1,23 @@
 import { useState } from 'react';
 import { verbs } from '../data/verbs';
-import { starterWords } from '../data/words';
 import { LearningProgress } from '../types';
-import { Play, ListFilter, RotateCcw, Languages } from 'lucide-react';
+import { Play, ListFilter, RotateCcw, Languages, BookMarked } from 'lucide-react';
 
 interface MenuProps {
   onStartVerbs: (selectedVerbs: typeof verbs) => void;
-  onStartWords: () => void;
+  onStartWordsQuiz: () => void;
+  onStartWordsStudy: () => void;
   progress: LearningProgress;
   onResetProgress: () => void;
 }
 
-export default function Menu({ onStartVerbs, onStartWords, progress, onResetProgress }: MenuProps) {
+export default function Menu({
+  onStartVerbs,
+  onStartWordsQuiz,
+  onStartWordsStudy,
+  progress,
+  onResetProgress,
+}: MenuProps) {
   const [section, setSection] = useState<'verbs' | 'words'>('verbs');
   const [mode, setMode] = useState<'all' | 'range'>('all');
   const [startIndex, setStartIndex] = useState(0);
@@ -20,166 +26,154 @@ export default function Menu({ onStartVerbs, onStartWords, progress, onResetProg
   const handleStartVerbs = () => {
     if (mode === 'all') {
       onStartVerbs(verbs);
-    } else {
-      const start = Math.min(startIndex, endIndex);
-      const end = Math.max(startIndex, endIndex);
-      const selected = verbs.slice(start, end + 1);
-      onStartVerbs(selected);
+      return;
     }
+
+    const start = Math.min(startIndex, endIndex);
+    const end = Math.max(startIndex, endIndex);
+    onStartVerbs(verbs.slice(start, end + 1));
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 border border-stone-200">
-      <h2 className="text-2xl font-serif font-medium text-stone-900 mb-6 text-center">Choose Your Practice</h2>
+    <div className="mx-auto w-full max-w-3xl rounded-3xl border border-white/40 bg-white/75 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
+      <h2 className="mb-6 text-center text-3xl font-semibold text-stone-900">Оберіть режим навчання</h2>
 
-      <div className="space-y-6">
-        <div className="grid grid-cols-2 gap-3 p-1 bg-stone-100 rounded-xl">
-          <button
-            onClick={() => setSection('verbs')}
-            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-              section === 'verbs' ? 'bg-white text-indigo-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'
-            }`}
-          >
-            Verbs
-          </button>
-          <button
-            onClick={() => setSection('words')}
-            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-              section === 'words' ? 'bg-white text-indigo-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'
-            }`}
-          >
-            Starter Words
-          </button>
-        </div>
+      <div className="mb-6 grid grid-cols-2 gap-2 rounded-2xl bg-stone-100 p-1">
+        <button
+          onClick={() => setSection('verbs')}
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+            section === 'verbs' ? 'bg-white text-indigo-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'
+          }`}
+        >
+          Дієслова
+        </button>
+        <button
+          onClick={() => setSection('words')}
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+            section === 'words' ? 'bg-white text-indigo-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'
+          }`}
+        >
+          Слова
+        </button>
+      </div>
 
-        {section === 'verbs' ? (
-          <>
-            <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-indigo-700">Your Verbs Progress</h3>
-                <button
-                  type="button"
-                  onClick={onResetProgress}
-                  className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  Reset
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-white rounded-lg p-3 border border-indigo-100">
-                  <p className="text-stone-500 text-xs uppercase">Rounds</p>
-                  <p className="text-xl font-semibold text-stone-800">{progress.roundsCompleted}</p>
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-indigo-100">
-                  <p className="text-stone-500 text-xs uppercase">Words</p>
-                  <p className="text-xl font-semibold text-stone-800">{progress.verbsPracticed}</p>
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-indigo-100">
-                  <p className="text-stone-500 text-xs uppercase">Accuracy</p>
-                  <p className="text-xl font-semibold text-stone-800">{progress.answerAccuracy}%</p>
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-indigo-100">
-                  <p className="text-stone-500 text-xs uppercase">Best Round</p>
-                  <p className="text-xl font-semibold text-stone-800">{progress.bestRoundScore}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 p-1 bg-stone-100 rounded-xl">
+      {section === 'verbs' ? (
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-indigo-700">Прогрес по дієсловах</h3>
               <button
-                onClick={() => setMode('all')}
-                className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                  mode === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'
-                }`}
+                type="button"
+                onClick={onResetProgress}
+                className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800"
               >
-                All Words
-              </button>
-              <button
-                onClick={() => setMode('range')}
-                className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                  mode === 'range' ? 'bg-white text-indigo-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'
-                }`}
-              >
-                Select Range
+                <RotateCcw className="h-3 w-3" />
+                Скинути
               </button>
             </div>
 
-            {mode === 'range' && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-stone-500 uppercase tracking-wide ml-1">Start Word</label>
-                  <select
-                    value={startIndex}
-                    onChange={(e) => setStartIndex(Number(e.target.value))}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-4 py-3 text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-                  >
-                    {verbs.map((verb, index) => (
-                      <option key={`start-${index}`} value={index}>
-                        {verb.infinitive}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <MetricCard label="Раунди" value={progress.roundsCompleted} />
+              <MetricCard label="Слів" value={progress.verbsPracticed} />
+              <MetricCard label="Точність" value={`${progress.answerAccuracy}%`} />
+              <MetricCard label="Кращий раунд" value={progress.bestRoundScore} />
+            </div>
+          </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-stone-500 uppercase tracking-wide ml-1">End Word</label>
-                  <select
-                    value={endIndex}
-                    onChange={(e) => setEndIndex(Number(e.target.value))}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-4 py-3 text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-                  >
-                    {verbs.map((verb, index) => (
-                      <option key={`end-${index}`} value={index}>
-                        {verb.infinitive}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="p-3 bg-indigo-50 rounded-lg text-indigo-700 text-sm flex items-start gap-2">
-                  <ListFilter className="w-4 h-4 mt-0.5 shrink-0" />
-                  <p>
-                    Selected range: <strong>{Math.abs(endIndex - startIndex) + 1}</strong> words
-                  </p>
-                </div>
-              </div>
-            )}
-
+          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-stone-100 p-1">
             <button
-              onClick={handleStartVerbs}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium shadow-lg shadow-indigo-600/20"
+              onClick={() => setMode('all')}
+              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                mode === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'
+              }`}
             >
-              <Play className="w-4 h-4" />
-              Start Verbs Practice
+              <span className="inline-flex items-center gap-2">
+                <Play className="h-4 w-4" />
+                Усі
+              </span>
             </button>
-          </>
-        ) : (
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-5 space-y-4">
-            <div className="flex items-start gap-3">
-              <Languages className="w-5 h-5 text-emerald-700 mt-0.5" />
-              <div>
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Words Section</h3>
-                <p className="text-sm text-emerald-900">
-                  Окремий розділ для базового словника. На картці бачиш слово нідерландською та вводиш переклад українською.
-                </p>
-              </div>
-            </div>
-            <p className="text-sm text-emerald-800">
-              Стартовий набір: <strong>{starterWords.length}</strong> слів.
-            </p>
-
             <button
-              onClick={onStartWords}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium shadow-lg shadow-emerald-600/20"
+              onClick={() => setMode('range')}
+              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                mode === 'range' ? 'bg-white text-indigo-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'
+              }`}
             >
-              <Play className="w-4 h-4" />
-              Start Words Practice
+              <span className="inline-flex items-center gap-2">
+                <ListFilter className="h-4 w-4" />
+                Діапазон
+              </span>
             </button>
           </div>
-        )}
-      </div>
+
+          {mode === 'range' && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="space-y-1 text-sm">
+                <span className="text-stone-500">Початок ({startIndex + 1})</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={verbs.length - 1}
+                  value={startIndex}
+                  onChange={(event) => setStartIndex(Number(event.target.value))}
+                  className="w-full"
+                />
+              </label>
+              <label className="space-y-1 text-sm">
+                <span className="text-stone-500">Кінець ({endIndex + 1})</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={verbs.length - 1}
+                  value={endIndex}
+                  onChange={(event) => setEndIndex(Number(event.target.value))}
+                  className="w-full"
+                />
+              </label>
+            </div>
+          )}
+
+          <button
+            onClick={handleStartVerbs}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-700"
+          >
+            <Play className="h-4 w-4" />
+            Почати тренування дієслів
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <button
+            onClick={onStartWordsQuiz}
+            className="flex w-full items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 text-left hover:bg-indigo-100"
+          >
+            <Languages className="mt-1 h-5 w-5 text-indigo-600" />
+            <span>
+              <span className="block font-semibold text-stone-900">Тренування перекладу</span>
+              <span className="text-sm text-stone-600">Введи український переклад і отримай результат.</span>
+            </span>
+          </button>
+
+          <button
+            onClick={onStartWordsStudy}
+            className="flex w-full items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-left hover:bg-emerald-100"
+          >
+            <BookMarked className="mt-1 h-5 w-5 text-emerald-700" />
+            <span>
+              <span className="block font-semibold text-stone-900">Нова функція: картки для вивчення</span>
+              <span className="text-sm text-stone-600">Гортай картки, відкривай переклад, відмічай вивчені слова.</span>
+            </span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-xl border border-indigo-100 bg-white p-3">
+      <p className="text-xs uppercase tracking-wide text-stone-500">{label}</p>
+      <p className="text-xl font-semibold text-stone-800">{value}</p>
     </div>
   );
 }
