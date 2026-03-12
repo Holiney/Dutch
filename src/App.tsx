@@ -13,12 +13,18 @@ import Summary from './components/Summary';
 import WordFlashcard from './components/WordFlashcard';
 import WordSummary from './components/WordSummary';
 import StudyWordsDeck from './components/StudyWordsDeck';
+import SentenceBuilder from './components/SentenceBuilder';
 import { BookOpen, ArrowLeft } from 'lucide-react';
 
 const PROGRESS_STORAGE_KEY = 'dutch_irregular_verbs_progress_v1';
 
 type GameState = 'menu' | 'playing' | 'summary';
-type PracticeMode = 'verbs' | 'wordsQuiz' | 'wordsStudy';
+type PracticeMode =
+  | 'verbs'
+  | 'wordsStudy'
+  | 'wordsQuizUaToNl'
+  | 'wordsQuizNlToUa'
+  | 'sentenceBuilder';
 
 const emptyProgress: LearningProgress = {
   roundsCompleted: 0,
@@ -106,8 +112,8 @@ export default function App() {
     setGameState('playing');
   };
 
-  const handleStartWordsQuiz = () => {
-    setPracticeMode('wordsQuiz');
+  const handleStartWordsQuiz = (mode: 'wordsQuizUaToNl' | 'wordsQuizNlToUa') => {
+    setPracticeMode(mode);
     setWordQueue(shuffleItems(starterWords));
     setWordResults([]);
     setGameState('playing');
@@ -118,13 +124,20 @@ export default function App() {
     setGameState('playing');
   };
 
+  const handleStartSentenceBuilder = () => {
+    setPracticeMode('sentenceBuilder');
+    setGameState('playing');
+  };
+
   const handleRestart = () => {
     if (practiceMode === 'verbs') {
       handleStartVerbs(initialRoundVerbs);
       return;
     }
 
-    handleStartWordsQuiz();
+    if (practiceMode === 'wordsQuizUaToNl' || practiceMode === 'wordsQuizNlToUa') {
+      handleStartWordsQuiz(practiceMode);
+    }
   };
 
   const handleCardResult = (result: RoundResult) => {
@@ -178,9 +191,13 @@ export default function App() {
   const title =
     practiceMode === 'verbs'
       ? 'Dutch Verbs Trainer'
-      : practiceMode === 'wordsQuiz'
-        ? 'Dutch Words Quiz'
-        : 'Dutch Words Flashcards';
+      : practiceMode === 'wordsStudy'
+        ? 'Dutch Words Flashcards'
+        : practiceMode === 'wordsQuizUaToNl'
+          ? 'UA → NL Words Quiz'
+          : practiceMode === 'wordsQuizNlToUa'
+            ? 'NL → UA Words Quiz'
+            : 'Sentence Builder';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 via-indigo-50 to-violet-100 px-4 py-10 text-stone-900">
@@ -202,7 +219,7 @@ export default function App() {
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
           {gameState === 'menu' && (
             <p className="mx-auto mt-2 max-w-xl text-stone-600">
-              Оновлений дизайн + новий режим вивчення слів картками для швидкого запам'ятовування.
+              Практикуй дієслова, слова та структури речень у коротких щоденних сесіях.
             </p>
           )}
         </header>
@@ -211,8 +228,10 @@ export default function App() {
           {gameState === 'menu' && (
             <Menu
               onStartVerbs={handleStartVerbs}
-              onStartWordsQuiz={handleStartWordsQuiz}
               onStartWordsStudy={handleStartWordsStudy}
+              onStartWordsUaToNlQuiz={() => handleStartWordsQuiz('wordsQuizUaToNl')}
+              onStartWordsNlToUaQuiz={() => handleStartWordsQuiz('wordsQuizNlToUa')}
+              onStartSentenceBuilder={handleStartSentenceBuilder}
               progress={progress}
               onResetProgress={handleResetProgress}
             />
@@ -227,17 +246,24 @@ export default function App() {
             />
           )}
 
-          {gameState === 'playing' && practiceMode === 'wordsQuiz' && currentWord && (
-            <WordFlashcard
-              word={currentWord}
-              currentIndex={wordsCurrentIndex}
-              totalCount={wordsTotalCount}
-              onNext={handleWordCardResult}
-            />
-          )}
+          {gameState === 'playing' &&
+            (practiceMode === 'wordsQuizUaToNl' || practiceMode === 'wordsQuizNlToUa') &&
+            currentWord && (
+              <WordFlashcard
+                word={currentWord}
+                currentIndex={wordsCurrentIndex}
+                totalCount={wordsTotalCount}
+                mode={practiceMode === 'wordsQuizUaToNl' ? 'uaToNl' : 'nlToUa'}
+                onNext={handleWordCardResult}
+              />
+            )}
 
           {gameState === 'playing' && practiceMode === 'wordsStudy' && (
             <StudyWordsDeck words={starterWords} onBack={handleBackToMenu} />
+          )}
+
+          {gameState === 'playing' && practiceMode === 'sentenceBuilder' && (
+            <SentenceBuilder onBack={handleBackToMenu} />
           )}
 
           {gameState === 'summary' && practiceMode === 'verbs' && (
@@ -249,9 +275,10 @@ export default function App() {
             />
           )}
 
-          {gameState === 'summary' && practiceMode === 'wordsQuiz' && (
-            <WordSummary results={wordResults} onRestart={handleRestart} onHome={handleBackToMenu} />
-          )}
+          {gameState === 'summary' &&
+            (practiceMode === 'wordsQuizUaToNl' || practiceMode === 'wordsQuizNlToUa') && (
+              <WordSummary results={wordResults} onRestart={handleRestart} onHome={handleBackToMenu} />
+            )}
         </main>
       </div>
     </div>
