@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import { verbs } from '../data/verbs';
 import { LearningProgress } from '../types';
-import { Play, ListFilter, RotateCcw, Languages, BookMarked, PencilLine } from 'lucide-react';
+import { Play, ListFilter, RotateCcw, Languages, BookMarked, PencilLine, Construction } from 'lucide-react';
 
 interface MenuProps {
   onStartVerbs: (selectedVerbs: typeof verbs) => void;
   onStartWordsStudy: () => void;
   onStartWordsUaToNlQuiz: () => void;
   onStartWordsNlToUaQuiz: () => void;
+  onStartSentenceBuilder: () => void;
   progress: LearningProgress;
   onResetProgress: () => void;
 }
@@ -17,10 +18,11 @@ export default function Menu({
   onStartWordsStudy,
   onStartWordsUaToNlQuiz,
   onStartWordsNlToUaQuiz,
+  onStartSentenceBuilder,
   progress,
   onResetProgress,
 }: MenuProps) {
-  const [section, setSection] = useState<'verbs' | 'words'>('verbs');
+  const [section, setSection] = useState<'verbs' | 'words' | 'sentenceBuilder'>('verbs');
   const [mode, setMode] = useState<'all' | 'range'>('all');
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(verbs.length - 1);
@@ -44,7 +46,7 @@ export default function Menu({
     <div className="mx-auto w-full max-w-3xl rounded-3xl border border-white/40 bg-white/75 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
       <h2 className="mb-6 text-center text-3xl font-semibold text-stone-900">Оберіть режим навчання</h2>
 
-      <div className="mb-6 grid grid-cols-2 gap-2 rounded-2xl bg-stone-100 p-1">
+      <div className="mb-6 grid grid-cols-3 gap-2 rounded-2xl bg-stone-100 p-1">
         <button
           onClick={() => setSection('verbs')}
           className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
@@ -60,6 +62,14 @@ export default function Menu({
           }`}
         >
           Слова
+        </button>
+        <button
+          onClick={() => setSection('sentenceBuilder')}
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+            section === 'sentenceBuilder' ? 'bg-white text-indigo-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'
+          }`}
+        >
+          Sentence Builder
         </button>
       </div>
 
@@ -148,7 +158,7 @@ export default function Menu({
             Почати тренування дієслів
           </button>
         </div>
-      ) : (
+      ) : section === 'words' ? (
         <div className="space-y-4">
           <button
             onClick={onStartWordsStudy}
@@ -180,6 +190,27 @@ export default function Menu({
             <span>
               <span className="block font-semibold text-stone-900">Тест: Нідерландська → Українська</span>
               <span className="text-sm text-stone-600">Бачиш слово нідерландською (з транскрипцією) та пишеш переклад українською.</span>
+            </span>
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
+            <p className="text-sm text-violet-900">
+              Щоденний тренажер структури речень: порядок слів, perfectum, imperfectum, питання, zelf/laten.
+            </p>
+          </div>
+
+          <button
+            onClick={onStartSentenceBuilder}
+            className="flex w-full items-start gap-3 rounded-2xl border border-violet-100 bg-violet-50 p-4 text-left hover:bg-violet-100"
+          >
+            <Construction className="mt-1 h-5 w-5 text-violet-700" />
+            <span>
+              <span className="block font-semibold text-stone-900">Sentence Builder (1–5 хв)</span>
+              <span className="text-sm text-stone-600">
+                6 режимів: normal sentence, question builder, perfectum, imperfectum, zelf vs laten, fix sentence.
+              </span>
             </span>
           </button>
         </div>
