@@ -51,6 +51,23 @@ npm run preview  # превʼю зібраного застосунку
 npm run lint     # перевірка TypeScript
 ```
 
+
+## Швидке вирішення merge conflict
+
+Для типового конфлікту в `src/App.tsx` та `src/components/Menu.tsx` можна використати скрипт:
+
+```bash
+./scripts/resolve-main-conflicts.sh
+```
+
+Скрипт:
+- підтягне `origin/main`
+- спробує merge
+- при конфлікті в `App/Menu` автоматично залишить версію вашої feature-гілки
+- створить merge commit
+
+Після цього залишиться лише `git push`.
+
 ## Як вирішити merge conflict у PR (App.tsx / Menu.tsx)
 
 Якщо GitHub показує `Branch has merge conflicts`, а конфлікти в `src/App.tsx` та `src/components/Menu.tsx`:
