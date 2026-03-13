@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, RotateCcw, BookCheck, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookCheck, BookOpen } from 'lucide-react';
 import { WordCard } from '../data/words';
 
 interface StudyWordsDeckProps {
@@ -9,7 +9,6 @@ interface StudyWordsDeckProps {
 
 export default function StudyWordsDeck({ words, onBack }: StudyWordsDeckProps) {
   const [index, setIndex] = useState(0);
-  const [showTranslation, setShowTranslation] = useState(false);
   const [knownWords, setKnownWords] = useState<string[]>([]);
 
   const currentWord = words[index];
@@ -32,12 +31,10 @@ export default function StudyWordsDeck({ words, onBack }: StudyWordsDeckProps) {
   };
 
   const goNext = () => {
-    setShowTranslation(false);
     setIndex((prev) => (prev + 1) % words.length);
   };
 
   const goPrev = () => {
-    setShowTranslation(false);
     setIndex((prev) => (prev - 1 + words.length) % words.length);
   };
 
@@ -67,22 +64,10 @@ export default function StudyWordsDeck({ words, onBack }: StudyWordsDeckProps) {
         <p className="mb-2 text-xs uppercase tracking-[0.22em] text-stone-500">{currentWord.category}</p>
         <p className="text-4xl font-semibold text-stone-900">{currentWord.dutch}</p>
 
-        <div className="my-6">
-          {showTranslation ? (
-            <p className="text-2xl font-medium text-indigo-600">{currentWord.translation}</p>
-          ) : (
-            <p className="text-stone-400">Натисни, щоб побачити переклад</p>
-          )}
+        <div className="my-6 space-y-2">
+          <p className="text-2xl font-medium text-indigo-600">{currentWord.translation}</p>
+          <p className="text-sm text-stone-500">Транскрипція: <span className="font-medium text-stone-700">{currentWord.transcription}</span></p>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setShowTranslation((prev) => !prev)}
-          className="inline-flex items-center gap-2 rounded-full bg-stone-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-black"
-        >
-          <RotateCcw className="h-4 w-4" />
-          {showTranslation ? 'Сховати переклад' : 'Показати переклад'}
-        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
